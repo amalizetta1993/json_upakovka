@@ -1,29 +1,66 @@
-class Stadion:
-    def __init__(self, capacity, usage, age):
-        self.capacity = capacity
-        self.usage = usage
-        self.age = age
+import pickle
+import json
+
+class Stadium:
+    def __init__(self, name, capacity, field_size):
+        self.name = name  # название стадиона
+        self.capacity = capacity  # вместимость зрителей
+        self.field_size = field_size  # размер поля
+        self.is_open = False  # статус открытия
         
-    def chack_capacity(self):
-        self.color = input('В какой цвет вы хотите покрасить машину: ')
-        return print(f'Автомобиль перекрашен в {self.color} цвет')
+    def open_stadium(self):
+        if self.is_open:
+            print(f"{self.name}: Стадион уже открыт")
+        else:
+            self.is_open = True
+            print(f"{self.name}: Стадион открыт для посещения")
+            
+    def get_info(self):
+        return f"Стадион '{self.name}':\n" \
+               f"Вместимость: {self.capacity}\n" \
+               f"Размер поля: {self.field_size}\n" \
+               f"Статус: {'открыт' if self.is_open else 'закрыт'}"
+
+
+class MyPickler:
+    def __init__(self, protocol=pickle.DEFAULT_PROTOCOL):
+
+        if protocol < 0 or protocol > 5:
+            self.protocol = pickle.DEFAULT_PROTOCOL
+        elif protocol == 0:
+            self.protocol = pickle.HIGHEST_PROTOCOL
+        else:
+            self.protocol = protocol
+
+    def pickle_data(self, data):
+        pickled_data = pickle.dumps(data, self.protocol)
+        return pickled_data
+
+    def pickle_file(self, filename, data: object):
+        with open(filename, 'wb') as fp:
+            pickle.dump(data, fp, self.protocol)
+        return f'Произведен пиклинг в файле {filename}'
+
+
+class MyUnpickler:
+
+    @classmethod
+    def unpickle_data(cls, pickled_data):
+        unpickle_data = pickle.loads(pickled_data)
+        return unpickle_data
+
+    @classmethod
+    def unpickle_file(cls, pickled_filename):
+        try:
+            with open(pickled_filename, 'rb') as fp:
+                unpickle_data = pickle.load(fp)
+        except FileExistsError:
+            return 'Файл не найден'
+        return unpickle_data
     
-    def TO(self, use, ages):
-        if use == 'личное':
-            print('Техосмотр не нужен')
-        else:
-            print('Вам нужно пройти техосмотр')
-            
-        to_dict={
-            '0':'нулевое ТО - 3000 рублей',
-            '1':'нулевое ТО - 15300 рублей',
-            '2':'нулевое ТО - 19020 рублей',
-            '3':'нулевое ТО - 21000 рублей',
-            '4':'нулевое ТО - 25900 рублей',                                                
-        }
-        if ages in to_dict:
-            print(f'Вам нужно пройти {to_dict[ages]}')
-        else:
-            print('Обратитесь к консультанту для рассчета стоимости ТО')
-            
-car = Auto('белый', 'личное', '3')
+olympic = Stadium("Олимпийский", 45000, "105x68 м")    
+    
+my_pickler_5 = MyPickler(protocol=5)
+my_pickler_5.pickle_file('stadiums', olympic)
+mus = MyUnpickler.unpickle_file('stadiums')    
+
