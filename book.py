@@ -7,14 +7,18 @@ class Book:
         self.cost = cost
         self.availability = availability
         
-    def check_book(self):
+    def get_data(self):
+        return self.name, self.cost, self.availability
+        
+    def check_availability(self):
         if self.availability:
-            return print(f'Книга {self.name} в наличии')
+            return f'Книга {self.name} в наличии'
         else:
-            return print('Книги в наличии нет')
+            return 'Книги в наличии нет'
     
     def change_cost(self):
-        return print(f'Новая цена книги {self.name} - {self.price*1.05}')
+        return f'Новая цена книги {self.name} - {self.cost*1.05} рубля'
+    
 
 class MyPickler:
     def __init__(self, protocol=pickle.DEFAULT_PROTOCOL):
@@ -51,10 +55,40 @@ class MyUnpickler:
         except FileExistsError:
             return 'Файл не найден'
         return unpickle_data
+
+class MyBookEncoder(json.JSONEncoder):
     
-book = Book('Преступление и наказание', '523 рубля', True)
+    def default(self, o):
+        return {
+            "Название": o.name,
+            "Стоимость": o.cost,
+            "Наличие": o.availability,
+            "Methods": {
+                "Получение данных": o.get_data(),
+                "Наличие": o.check_availability(),                
+                "Изменение цены": o.change_cost()                   
+            },
+            "ClassName": o.__class__.__name__
+        }
+        
+book = Book('Преступление и наказание', 523, True)
     
 my_pickler_5 = MyPickler(protocol=5)
 my_pickler_5.pickle_file('books', book)
 mus = MyUnpickler.unpickle_file('books')  
               
+# json_data = json.dumps(book, cls=MyBookEncoder, ensure_ascii=False, indent=2)      
+# print(json_data)
+# python_book_from_file = json.loads(json_data)
+# print(python_book_from_file)
+
+#json
+with open(r'my_book_encode.json', 'w', encoding='utf-8') as fh:
+       json.dump(book, fh, 
+                 cls=MyBookEncoder,
+                 ensure_ascii=False, indent=2)
+
+with open(r'my_book_encode.json', 'r', encoding='utf-8') as fh:
+       python_book_from_file = json.load(fh)
+       
+print(python_book_from_file)
