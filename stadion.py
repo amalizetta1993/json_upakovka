@@ -2,23 +2,23 @@ import pickle
 import json
 
 class Stadium:
-    def __init__(self, name, capacity, field_size):
+    def __init__(self, name, capacity, is_open):
         self.name = name  # название стадиона
         self.capacity = capacity  # вместимость зрителей
-        self.field_size = field_size  # размер поля
-        self.is_open = False  # статус открытия
+        self.is_open = is_open  # статус открытия
+        
+    def __str__(self):
+        return f"Stadium({self.name}, вместительность {self.capacity}, статус {self.is_open})"
         
     def open_stadium(self):
         if self.is_open:
-            print(f"{self.name}: Стадион уже открыт")
+            return f"{self.name}: Стадион уже открыт"
         else:
-            self.is_open = True
-            print(f"{self.name}: Стадион открыт для посещения")
+            return f"{self.name}: Стадион закрыт"
             
     def get_info(self):
         return f"Стадион '{self.name}':\n" \
                f"Вместимость: {self.capacity}\n" \
-               f"Размер поля: {self.field_size}\n" \
                f"Статус: {'открыт' if self.is_open else 'закрыт'}"
 
 
@@ -58,9 +58,39 @@ class MyUnpickler:
             return 'Файл не найден'
         return unpickle_data
     
-olympic = Stadium("Олимпийский", 45000, "105x68 м")    
+class JSONDataAdapter:
+    
+    @staticmethod
+    def to_json(obj):
+        if isinstance(obj, Stadium):
+            return json.dumps({
+                "Название": obj.name,
+                "Вместимость": obj.capacity,
+                "Статус": obj.is_open,
+                "Открыт ли": obj.open_stadium()
+            }, ensure_ascii=False )
+                
+    @staticmethod
+    def from_json(json_str):     
+        try: 
+            obj = json.loads(json_str)
+            stadion = Stadium(obj["Название"], obj["Вместимость"], obj["Статус"])
+            return stadion
+        except AttributeError:
+            print('Неверная структура')
+        
+olympic = Stadium("Олимпийский", 45000, True)    
     
 my_pickler_5 = MyPickler(protocol=5)
 my_pickler_5.pickle_file('stadiums', olympic)
 mus = MyUnpickler.unpickle_file('stadiums')    
 
+
+json_1 = JSONDataAdapter.to_json(olympic)
+
+
+print(json_1)
+
+json_2 = JSONDataAdapter.from_json(json_1)
+
+print(json_2)
